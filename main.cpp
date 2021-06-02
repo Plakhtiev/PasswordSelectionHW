@@ -112,7 +112,9 @@ void DencryptAes(const std::vector<unsigned char> chipherText, std::vector<unsig
 	int lastPartLen = 0;
 	if (!EVP_DecryptFinal_ex(ctx, &chipherTextBuf[0] + chipherTextSize, &lastPartLen)) {
 		EVP_CIPHER_CTX_free(ctx);
-		throw std::runtime_error("DencryptFinal error");
+		//throw std::runtime_error("DencryptFinal error");
+		decryptText.push_back('0');
+		return;
 	}
 	chipherTextSize += lastPartLen;
 	chipherTextBuf.erase(chipherTextBuf.begin() + chipherTextSize, chipherTextBuf.end());
@@ -125,29 +127,14 @@ void DencryptAes(const std::vector<unsigned char> chipherText, std::vector<unsig
 void Decrypt()
 {
 	std::vector<unsigned char> chipherText;
-	ReadFile("chipher_text.txt", chipherText);
-
-	std::vector<unsigned char> hash;
-	CalculateHash(chipherText, hash);
-
-	std::vector<unsigned char> chipherTextRes;
-	DencryptAes(chipherText, chipherTextRes);
-
-	WriteFile("decrypt_text.txt", chipherTextRes);
-}
-
-void DecryptForBruteForce() {
-	std::vector<unsigned char> chipherText;
 	ReadFile("chipherOnlytext.txt", chipherText);
-
-	std::vector<unsigned char> hash;
-	CalculateHash(chipherText, hash);
 
 	std::vector<unsigned char> chipherTextRes;
 	DencryptAes(chipherText, chipherTextRes);
 
 	WriteFile("decryptChipherOnlytext.txt", chipherTextRes);
 }
+
 
 std::vector<unsigned char> HashFileText(const std::string& filePath) {
 	std::vector<unsigned char> bruteForceText;
@@ -164,6 +151,8 @@ std::vector<unsigned char> HashFileText(const std::string& filePath) {
 	return hashKey;
 }
 
+
+
 std::vector<unsigned char> OnlyText(std::vector<unsigned char>& cryptText) {
 	const int sizeHash = 32;
 	auto begin = cryptText.begin() + (cryptText.size() - sizeHash);
@@ -171,29 +160,33 @@ std::vector<unsigned char> OnlyText(std::vector<unsigned char>& cryptText) {
 	return cryptText;
 }
 
-//std::vector<unsigned char> hashTxt = HashFileText("chipher_text.txt");
-//std::vector<unsigned char> onlyChiperText;
-
-//void GetTextForDecrypt() {
-//	std::string str = "¶~s&Cq'¥˛tœ‡7”";
-//
-//	std::vector<unsigned char> chipherText;
-//	ReadFile("chipher_text.txt", chipherText);
-//	std::vector<unsigned char> onlyChiperText = OnlyText(chipherText);
-//	WriteFile("chipherOnlytext.txt", chipherText);
-//}
 
 int main(int argc, char* argv[])
 {
 	Timer timer;
-
 	std::string pass = "b";
-	BruteForce br("chipher_text.txt");
-	br.GetGuess(100);
-
-	try
+try
 	{
-		PasswordToKey(pass);
+	BruteForce br("chipher_text_brute_force");
+	br.GetGuess();
+
+	const std::vector<unsigned char> chipherText = br.Get—ipherOnlyText();
+	std::vector<std::string> generatedPass = br.GetGeneratedPass();
+	for (auto begin = generatedPass.begin(); begin != generatedPass.end(); ++begin) {
+		PasswordToKey(*begin);
+		std::vector<unsigned char> dencryptTextRes;
+		DencryptAes(chipherText, dencryptTextRes);
+		std::vector<unsigned char> hash;
+		CalculateHash(dencryptTextRes, hash);
+		if (hash == br.GetHashKey()) {
+			br.SetFoundPass(*begin);
+			std::cout << '\n' << "password was found - " << *begin;
+			return 0;
+		}
+	}
+
+	
+		//PasswordToKey(pass);
 		//Encrypt();
 		//Decrypt();
 	}
