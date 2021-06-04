@@ -1,17 +1,16 @@
 #include "BruteForse.h"
-
+std::mutex mtxBrf;
 BruteForce::BruteForce(const std::string pathFile)
 {
 	for (int i = 1; i < MAX_SIZE; m_guessc[i++] = -1);        // initializing counter with -1
 	for (int i = 0; i <= MAX_SIZE; m_guess[i++] = '\0');     // initializing guess with NULL
 
-	//get hash from file
+	
 	std::vector<unsigned char> chipherText;
 	ReadFile(pathFile, chipherText);
 
 	const int size = chipherText.size() - 32; // size text without hash
 	size_t i = 0;
-	//auto begin = chipherText.begin() + (chipherText.size() - sizeHash);
 	auto begin = chipherText.begin();
 	auto end = chipherText.end();
 
@@ -20,7 +19,7 @@ BruteForce::BruteForce(const std::string pathFile)
 			m_cipherOnlyText.push_back(*begin);//get text without hash
 		}
 		if (i >= size) {
-			m_hashKey.push_back(*begin);
+			m_hashKey.push_back(*begin);//get hash from file
 		}
 	}
 	
@@ -29,6 +28,7 @@ BruteForce::BruteForce(const std::string pathFile)
 
 void BruteForce::GetGuess(const size_t countGeneratePass)
 {
+	std::lock_guard<std::mutex> grd(mtxBrf);
 	int i, j;
 
 	while (m_countGuess++ < pow(CHAR_COUNT, PASS_LENGTH) && countGeneratePass >= m_countGuess)
@@ -48,6 +48,7 @@ void BruteForce::GetGuess(const size_t countGeneratePass)
 		}
 		// output the guess to std::out
 		printf("%s\n", m_guess);   // printf is used since it is way faster than std::cout
+		
 		std::string str;
 		for (int k = 0; m_guess[k] != '\0'; ++k) {
 			str.push_back(m_guess[k]);
@@ -71,6 +72,18 @@ void BruteForce::SetFoundPass(std::string pass)
 {
 	m_passFound = pass;
 }
+
+void BruteForce::SetCountChekedPass(size_t count)
+{
+	m_countChekedPass += count;
+}
+
+size_t BruteForce::GetCountChekedPass()
+{
+	return m_countChekedPass;
+}
+
+
 
 std::vector<std::string> BruteForce::GetGeneratedPass()
 {

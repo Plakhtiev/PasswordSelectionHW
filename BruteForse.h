@@ -5,6 +5,7 @@
 #include <math.h>
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include "openssl/evp.h"
 #include <openssl/aes.h>
@@ -23,6 +24,8 @@ public:
 	void GetGuess(const size_t countGeneratePass = pow(CHAR_COUNT, PASS_LENGTH));
 	std::string GetFoundPass();
 	void SetFoundPass(std::string pass);
+	void SetCountChekedPass(size_t count);
+	size_t GetCountChekedPass();
 	std::vector<std::string> GetGeneratedPass();
 	std::vector<std::string> GetGeneratedPass(size_t beginIndex);
 	std::vector<unsigned char> GetHashKey();
@@ -34,6 +37,7 @@ private:
 	std::vector<unsigned char> m_hashKey;
 	std::vector<unsigned char> m_cipherOnlyText;// text without hash
 	size_t m_countGuess = 0;
+	size_t m_countChekedPass = 0;
 	std::string m_passFound = "not found";
 private:
 	int m_guessc[MAX_SIZE] = { }; // counter
