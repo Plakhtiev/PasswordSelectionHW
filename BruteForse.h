@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <mutex>
 
@@ -13,9 +14,11 @@
 
 #include "FileStream.h"
 
-#define MAX_SIZE 30         // only used to avoid errors
+#define MAX_SIZE 10         // only used to avoid errors
 #define CHAR_COUNT 36       // size of the charset you want to use (number of possible chars for the password)
 #define PASS_LENGTH 4
+#define PASS_3_CHARS 46656
+#define PASS_4_CHARS 1679616
 
 class BruteForce
 {
@@ -30,10 +33,9 @@ public:
 	std::vector<std::string> GetGeneratedPass(size_t beginIndex);
 	std::vector<unsigned char> GetHashKey();
 	std::vector<unsigned char> Get—ipherOnlyText();
-
+	
 private:
 	std::vector<std::string> m_guessPassList;
-	std::vector<unsigned char> m_guessVecHash;
 	std::vector<unsigned char> m_hashKey;
 	std::vector<unsigned char> m_cipherOnlyText;// text without hash
 	size_t m_countGuess = 0;
@@ -41,6 +43,6 @@ private:
 	std::string m_passFound = "not found";
 private:
 	int m_guessc[MAX_SIZE] = { }; // counter
-	unsigned char m_guess[MAX_SIZE + 1];         // chars crresponding to counter
-	const unsigned char m_chars[CHAR_COUNT + 1] = "abcdefghijklmnopqrstuvwxyz0123456789";
+	char m_guess[MAX_SIZE + 1];         // chars crresponding to counter
+	const unsigned char m_chars[CHAR_COUNT + 1] =  "abcdefghijklmnopqrstuvwxyz0123456789";
 };

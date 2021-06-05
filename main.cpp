@@ -4,6 +4,8 @@
 #include <mutex>
 #include <iostream>
 #include <stdio.h>
+#include <future>
+#include <windows.h>
 
 #include "openssl/evp.h"
 #include <openssl/aes.h>
@@ -139,44 +141,9 @@ void Decrypt()
 }
 
 
-std::vector<unsigned char> HashFileText(const std::string& filePath) {
-	std::vector<unsigned char> bruteForceText;
-	ReadFile(filePath, bruteForceText);
-
-	const int sizeHash = 32;
-	auto begin = bruteForceText.begin() + (bruteForceText.size() - sizeHash);
-	auto end = bruteForceText.end();
-
-	std::vector<unsigned char> hashKey;
-	for (;begin != end; ++begin) {
-		hashKey.push_back(*begin);
-	}
-	return hashKey;
-}
-
-
-
-std::vector<unsigned char> OnlyText(std::vector<unsigned char>& cryptText) {
-	const int sizeHash = 32;
-	auto begin = cryptText.begin() + (cryptText.size() - sizeHash);
-	cryptText.erase(begin, cryptText.end());
-	return cryptText;
-}
-
-#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-#define PBWIDTH 60
-
-void printProgress(double percentage) {
-	int val = (int)(percentage * 100);
-	int lpad = (int)(percentage * PBWIDTH);
-	int rpad = PBWIDTH - lpad;
-	printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
-	fflush(stdout);
-}
-
 void PaswordGuessing(BruteForce& brf) {
-	std::lock_guard<std::mutex> grd(mtxPassGen);
-	const std::vector<unsigned char> chipherText = brf.Get—ipherOnlyText();
+	//std::lock_guard<std::mutex> grd(mtxPassGen);
+	
 	std::vector<std::string> generatedPass = brf.GetGeneratedPass();
 
 	size_t indexBegin = brf.GetCountChekedPass();
@@ -184,7 +151,7 @@ void PaswordGuessing(BruteForce& brf) {
 	for (; begin != generatedPass.end(); ++begin) {
 		PasswordToKey(*begin);
 		std::vector<unsigned char> dencryptTextRes;
-		DencryptAes(chipherText, dencryptTextRes);
+		DencryptAes(brf.Get—ipherOnlyText(), dencryptTextRes);
 		std::vector<unsigned char> hash;
 		CalculateHash(dencryptTextRes, hash);
 		brf.SetCountChekedPass(1);
@@ -196,29 +163,38 @@ void PaswordGuessing(BruteForce& brf) {
 	}
 }
 
-
 int main(int argc, char* argv[])
 {
 	Timer timer;
+	
 	std::string pass = "b";
 	const size_t quarter = pow(CHAR_COUNT, PASS_LENGTH) / 4;
-try
+
+	
+	
+	try
 	{
-	BruteForce br("chipher_text_brute_force");
-	br.GetGuess();	
-	/*std::thread t_GetGuess1(&BruteForce::GetGuess, &br);
-	std::thread t_passGuess1([&]() {
-		PaswordGuessing(br);
-		});
-	t_GetGuess1.join();
-	t_passGuess1.join();	*/
-	
-	
-	PaswordGuessing(br);
+		BruteForce br("chipher_text_brute_force");
+		/*br.GetGuess();
+		PaswordGuessing(br);*/
+		std::future<void> f_getGuess1 = std::async(&BruteForce::GetGuess, &br, quarter);
+		std::future<void> f_PasswordGuessing1 = std::async([&]() {
+			PaswordGuessing(br);
+			});
+		f_getGuess1.get();
+		f_PasswordGuessing1.get();
+		
+		std::future<void> f_getGuess2 = std::async(&BruteForce::GetGuess, &br, quarter);
+		f_getGuess2.get();
+		std::future<void> f_PasswordGuessing2 = std::async([&]() {
+			PaswordGuessing(br);
+			});
+		f_PasswordGuessing2.get();
 
-	
-	std::cout << '\n' << br.GetFoundPass();
+		
 
+		std::cout << '\n' << br.GetCountChekedPass();
+		
 		//PasswordToKey(pass);
 		//Encrypt();
 		//Decrypt();
@@ -227,4 +203,5 @@ try
 	{
 		std::cerr << ex.what();
 	}
+	
 }
