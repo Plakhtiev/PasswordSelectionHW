@@ -23,9 +23,8 @@ BruteForce::BruteForce(const std::string pathFile)
 	}
 }
 
-void BruteForce::GetGuess(const size_t countGeneratePass)
+void BruteForce::GenerateGuess(const size_t countGeneratePass)
 {
-	//std::lock_guard<std::mutex> grd(mtxBrf);
 	int i, j;
 
 	while (m_countGuess++ < pow(CHAR_COUNT, PASS_LENGTH) && countGeneratePass >= m_countGuess)
@@ -43,19 +42,19 @@ void BruteForce::GetGuess(const size_t countGeneratePass)
 			if (j < MAX_SIZE) // check if an element guess[j] exists
 				m_guess[j] = m_chars[m_guessc[j]];
 		}
+
 		// output the guess to std::out
 		//printf("%s\n", m_guess);   // printf is used since it is way faster than std::cout
+		//
 
-		std::string_view str{ m_guess  };
-		
-		m_guessPassList.push_back(static_cast<std::string>(str));
+		//m_guessPassListView.emplace_back(m_guess);
+		m_guessPassList.emplace_back(m_guess);
 
 		++m_guessc[0];    // increment guessc at index 0 for the next run
 	}
 
 	m_countGuess = 0; //reset count Guess
 }
-
 
 std::string BruteForce::GetFoundPass()
 {
@@ -82,13 +81,13 @@ std::vector<std::string> BruteForce::GetGeneratedPass()
 	return m_guessPassList;
 }
 
-std::vector<std::string> BruteForce::GetGeneratedPass(size_t beginIndex)
+std::vector<std::string> BruteForce::GetGeneratedPass(size_t beginIndex, size_t endIndex)
 {
 	auto begin = m_guessPassList.begin() + beginIndex;
 	auto end = m_guessPassList.end();
-
+	size_t i = 0;
 	std::vector<std::string> result;
-	for (;begin != end; ++begin) {
+	for (;begin != end && i < endIndex; ++begin, ++i) {
 		result.push_back(*begin);
 	}
 	return result;

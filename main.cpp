@@ -140,15 +140,14 @@ void Decrypt()
 	WriteFile("decryptChipherOnlytext.txt", chipherTextRes);
 }
 
-
 void PaswordGuessing(BruteForce& brf) {
 	//std::lock_guard<std::mutex> grd(mtxPassGen);
-	
+
 	std::vector<std::string> generatedPass = brf.GetGeneratedPass();
 
-	size_t indexBegin = brf.GetCountChekedPass();
-	auto begin = generatedPass.begin() + indexBegin;
-	for (; begin != generatedPass.end(); ++begin) {
+	auto begin = generatedPass.begin() + brf.GetCountChekedPass();
+	auto end = generatedPass.end();
+	for (; begin != end; ++begin) {
 		PasswordToKey(*begin);
 		std::vector<unsigned char> dencryptTextRes;
 		DencryptAes(brf.Get—ipherOnlyText(), dencryptTextRes);
@@ -166,35 +165,23 @@ void PaswordGuessing(BruteForce& brf) {
 int main(int argc, char* argv[])
 {
 	Timer timer;
-	
+
 	std::string pass = "b";
 	const size_t quarter = pow(CHAR_COUNT, PASS_LENGTH) / 4;
 
-	
-	
 	try
 	{
 		BruteForce br("chipher_text_brute_force");
-		/*br.GetGuess();
-		PaswordGuessing(br);*/
-		std::future<void> f_getGuess1 = std::async(&BruteForce::GetGuess, &br, quarter);
-		std::future<void> f_PasswordGuessing1 = std::async([&]() {
-			PaswordGuessing(br);
-			});
-		f_getGuess1.get();
-		f_PasswordGuessing1.get();
-		
-		std::future<void> f_getGuess2 = std::async(&BruteForce::GetGuess, &br, quarter);
-		f_getGuess2.get();
-		std::future<void> f_PasswordGuessing2 = std::async([&]() {
-			PaswordGuessing(br);
-			});
-		f_PasswordGuessing2.get();
 
-		
+		br.GenerateGuess();
+		PaswordGuessing(br);
+		/*std::thread t_guess1([&]() {
+			PaswordGuessing1(br);
+			});*/
 
+			
 		std::cout << '\n' << br.GetCountChekedPass();
-		
+
 		//PasswordToKey(pass);
 		//Encrypt();
 		//Decrypt();
@@ -203,5 +190,4 @@ int main(int argc, char* argv[])
 	{
 		std::cerr << ex.what();
 	}
-	
 }
