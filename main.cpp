@@ -140,22 +140,22 @@ void Decrypt()
 	WriteFile("decryptChipherOnlytext.txt", chipherTextRes);
 }
 
-void PaswordGuessing(BruteForce& brf) {
+void PaswordGuessing(std::vector<std::string> generatedPass, std::vector<unsigned char> cipherOnlyText, std::vector<unsigned char> hashKey) {
 	//std::lock_guard<std::mutex> grd(mtxPassGen);
 
-	std::vector<std::string> generatedPass = brf.GetGeneratedPass();
-
-	auto begin = generatedPass.begin() + brf.GetCountChekedPass();
+	auto begin = generatedPass.begin();
 	auto end = generatedPass.end();
 	for (; begin != end; ++begin) {
+		mtxPassGen.lock();
 		PasswordToKey(*begin);
+		mtxPassGen.unlock();
+
 		std::vector<unsigned char> dencryptTextRes;
-		DencryptAes(brf.Get—ipherOnlyText(), dencryptTextRes);
+		DencryptAes(cipherOnlyText, dencryptTextRes);
 		std::vector<unsigned char> hash;
 		CalculateHash(dencryptTextRes, hash);
-		brf.SetCountChekedPass(1);
-		if (hash == brf.GetHashKey()) {
-			brf.SetFoundPass(*begin);
+
+		if (hash == hashKey) {
 			std::cout << '\n' << "password was found - " << *begin;
 			return;
 		}
@@ -172,15 +172,26 @@ int main(int argc, char* argv[])
 	try
 	{
 		BruteForce br("chipher_text_brute_force");
+		std::vector<unsigned char> cipherOnlyText = br.Get—ipherOnlyText();
+		std::vector<unsigned char> hashKey = br.GetHashKey();
 
-		br.GenerateGuess();
-		PaswordGuessing(br);
-		/*std::thread t_guess1([&]() {
-			PaswordGuessing1(br);
-			});*/
+		std::vector<std::string> passList1;
+		br.GenerateGuess(passList1, quarter);
 
-			
-		std::cout << '\n' << br.GetCountChekedPass();
+		std::vector<std::string> passList2;
+		br.GenerateGuess(passList1, quarter);
+
+		//PaswordGuessing(br);
+		std::thread t_guess1([&]() {
+			PaswordGuessing(passList1, cipherOnlyText, hashKey);
+			});
+
+		std::thread t_guess2([&]() {
+			PaswordGuessing(passList2, cipherOnlyText, hashKey);
+			});
+
+		t_guess1.join();
+		t_guess2.join();
 
 		//PasswordToKey(pass);
 		//Encrypt();
