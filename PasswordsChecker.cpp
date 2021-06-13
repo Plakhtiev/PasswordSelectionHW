@@ -18,6 +18,11 @@ progresscpp::ProgressBar PasswordsChecker::GetProgressBar()
 	return m_progressBar;
 }
 
+std::string PasswordsChecker::GetPassFound()
+{
+	return m_passFound;
+}
+
 void PasswordsChecker::PasswordToKey(std::string& password)
 {
 	if (!m_dgst)
@@ -85,14 +90,14 @@ void PasswordsChecker::PasswordGuessing(std::vector<std::string> generatedPass)
 	for (; begin != end; ++begin) {
 		
 		PasswordToKey(*begin);
-
+		
 		std::vector<unsigned char> dencryptTextRes;
 		DencryptAes(m_cipherOnlyText, dencryptTextRes);
 		std::vector<unsigned char> hash;
 		CalculateHash(dencryptTextRes, hash);
 
 		if (hash == m_hashKey) {
-			std::cout << '\n' << "password was found - " << *begin;
+			m_passFound = *begin;
 			return;
 		}
 	}

@@ -20,6 +20,7 @@ public:
 	PasswordsChecker(std::shared_ptr<BruteForce> generator);
 	void PasswordGuessing(std::vector<std::string> generatedPass);
 	progresscpp::ProgressBar GetProgressBar();
+	std::string GetPassFound();
 private:
 	void PasswordToKey(std::string& password);
 	void CalculateHash(const std::vector<unsigned char>& data, std::vector<unsigned char>& hash);
@@ -32,6 +33,7 @@ private:
 	std::shared_ptr<BruteForce> m_generator;
 	std::vector<unsigned char> m_cipherOnlyText;
 	std::vector<unsigned char> m_hashKey;
+	std::string m_passFound;
 private:
 	progresscpp::ProgressBar m_progressBar;
 };

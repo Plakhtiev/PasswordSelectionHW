@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 		std::thread t_process([&]() {
 			for (int i = 0; i < PASS_4_CHARS; i++) {
 				++progressBar;
-				if (i % 20000 == 0)
+				if (i % 10000 == 0)
 						progressBar.display();
 					}			
 			});
@@ -58,8 +58,9 @@ int main(int argc, char* argv[])
 		t_guess2.join();
 		t_guess3.join();
 		t_guess4.join();
-
 		
+		std::string pass  = checker.GetPassFound();
+		std::cout << '\n' << "password was found - " << pass;
 
 		//for (int i = 0; i < total; i++) {
 		//	++progressBar; // record the tick

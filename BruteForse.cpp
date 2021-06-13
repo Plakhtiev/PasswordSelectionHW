@@ -56,10 +56,6 @@ void BruteForce::GenerateGuess(std::vector<std::string>& guessPassList, const si
 	m_countGuess = 0; //reset count Guess
 }
 
-size_t BruteForce::GetTotalGuess()
-{
-	return  m_totalGuess;
-}
 
 std::vector<unsigned char> BruteForce::GetHashKey()
 {
