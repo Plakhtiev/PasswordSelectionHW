@@ -20,8 +20,7 @@
 
 int main(int argc, char* argv[])
 {
-	Timer timer;
-
+	
 	const size_t quarter = pow(CHAR_COUNT, PASS_LENGTH) / 4;
 
 	try
@@ -39,10 +38,18 @@ int main(int argc, char* argv[])
 		pbrf->GenerateGuess(passList3, quarter);
 		pbrf->GenerateGuess(passList4, quarter);
 
-		std::thread t_guess1(&PasswordsChecker::PasswordGuessing, checker, passList1);
-		std::thread t_guess2(&PasswordsChecker::PasswordGuessing, checker, passList2);
-		std::thread t_guess3(&PasswordsChecker::PasswordGuessing, checker, passList3);
-		std::thread t_guess4(&PasswordsChecker::PasswordGuessing, checker, passList4);
+		std::thread t_guess1([&]() {
+			checker.PasswordGuessing(passList1);
+			});
+		std::thread t_guess2([&]() {
+			checker.PasswordGuessing(passList2);
+			});
+		std::thread t_guess3([&]() {
+			checker.PasswordGuessing(passList3);
+			});
+		std::thread t_guess4([&]() {
+			checker.PasswordGuessing(passList4);
+			});
 
 		progresscpp::ProgressBar progressBar = checker.GetProgressBar();
 		std::thread t_process([&]() {
@@ -61,16 +68,6 @@ int main(int argc, char* argv[])
 		
 		std::string pass  = checker.GetPassFound();
 		std::cout << '\n' << "password was found - " << pass;
-
-		//for (int i = 0; i < total; i++) {
-		//	++progressBar; // record the tick
-
-		//	// simulate work
-
-		//	// display the bar only at certain steps
-		//	if (i % 10000 == 0)
-		//		progressBar.display();
-		//}
 		
 	}
 	catch (const std::runtime_error& ex)
