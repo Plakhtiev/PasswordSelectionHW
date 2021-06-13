@@ -46,13 +46,10 @@ void BruteForce::GenerateGuess(std::vector<std::string>& guessPassList, const si
 			if (j < MAX_SIZE) // check if an element guess[j] exists
 				m_guess[j] = m_chars[m_guessCounter[j]];
 		}
-
-		// output the guess to std::out
+		
 		//printf("%s\n", m_guess);   // printf is used since it is way faster than std::cout
-		//
-
-		//m_guessPassListView.emplace_back(m_guess);
-		guessPassList.push_back(m_guess);
+		//		
+		guessPassList.emplace_back(m_guess);
 
 		++m_guessCounter[0];    // increment guessc at index 0 for the next run
 	}
