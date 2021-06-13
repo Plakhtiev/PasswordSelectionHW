@@ -23,9 +23,10 @@
 class BruteForce
 {
 public:
-	BruteForce();
+	
 	BruteForce(const std::string pathFile);
 	void GenerateGuess(std::vector<std::string>& guessPassList, const size_t countGeneratePass = pow(CHAR_COUNT, PASS_LENGTH));
+	size_t GetTotalGuess();
 
 	std::vector<unsigned char> GetHashKey();
 	std::vector<unsigned char> GetCipherOnlyText();
@@ -35,8 +36,9 @@ private:
 	std::vector<unsigned char> m_hashKey;
 	std::vector<unsigned char> m_cipherOnlyText;// text without hash
 	size_t m_countGuess = 0;
+	size_t m_totalGuess;
 private:
 	int m_guessCounter[MAX_SIZE] = { };
 	char m_guess[MAX_SIZE + 1];         // chars crresponding to counter
-	const unsigned char m_chars[CHAR_COUNT + 1] = "abcdefghijklmnopqrstuvwxyz0123456789";
+	const unsigned char m_chars[CHAR_COUNT + 1];
 };

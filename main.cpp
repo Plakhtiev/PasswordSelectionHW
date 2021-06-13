@@ -16,6 +16,8 @@
 #include "FileStream.h"
 #include "ProgressBar.hpp"
 
+
+
 int main(int argc, char* argv[])
 {
 	Timer timer;
@@ -42,11 +44,33 @@ int main(int argc, char* argv[])
 		std::thread t_guess3(&PasswordsChecker::PasswordGuessing, checker, passList3);
 		std::thread t_guess4(&PasswordsChecker::PasswordGuessing, checker, passList4);
 
+		progresscpp::ProgressBar progressBar = checker.GetProgressBar();
+		std::thread t_process([&]() {
+			for (int i = 0; i < PASS_4_CHARS; i++) {
+				++progressBar;
+				if (i % 20000 == 0)
+						progressBar.display();
+					}			
+			});
+
+		t_process.join();	
 		t_guess1.join();
 		t_guess2.join();
 		t_guess3.join();
 		t_guess4.join();
-		//t_process.join();
+
+		
+
+		//for (int i = 0; i < total; i++) {
+		//	++progressBar; // record the tick
+
+		//	// simulate work
+
+		//	// display the bar only at certain steps
+		//	if (i % 10000 == 0)
+		//		progressBar.display();
+		//}
+		
 	}
 	catch (const std::runtime_error& ex)
 	{

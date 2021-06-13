@@ -1,10 +1,9 @@
 #include "BruteForse.h"
 
-BruteForce::BruteForce()
-{
-}
 
-BruteForce::BruteForce(const std::string pathFile)
+
+BruteForce::BruteForce(const std::string pathFile) :
+	m_chars("abcdefghijklmnopqrstuvwxyz0123456789")
 {
 	for (int i = 1; i < MAX_SIZE; m_guessCounter[i++] = -1);        // initializing counter with -1
 	for (int i = 0; i <= MAX_SIZE; m_guess[i++] = '\0');     // initializing guess with NULL
@@ -53,8 +52,13 @@ void BruteForce::GenerateGuess(std::vector<std::string>& guessPassList, const si
 
 		++m_guessCounter[0];    // increment guessc at index 0 for the next run
 	}
-
+	
 	m_countGuess = 0; //reset count Guess
+}
+
+size_t BruteForce::GetTotalGuess()
+{
+	return  m_totalGuess;
 }
 
 std::vector<unsigned char> BruteForce::GetHashKey()

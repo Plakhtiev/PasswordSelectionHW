@@ -3,12 +3,19 @@
 PasswordsChecker::PasswordsChecker(std::shared_ptr<BruteForce> generator) :
 	m_generator(generator),
 	m_cipherOnlyText(generator->GetCipherOnlyText()),
-	m_hashKey(generator->GetHashKey())
+	m_hashKey(generator->GetHashKey()),
+	m_progressBar(progresscpp::ProgressBar(PASS_4_CHARS, 70, '#', '-'))
 
 {
 	/* Initialize digests table */
 	OpenSSL_add_all_digests();
 	m_dgst = EVP_get_digestbyname("md5");
+}
+
+
+progresscpp::ProgressBar PasswordsChecker::GetProgressBar()
+{
+	return m_progressBar;
 }
 
 void PasswordsChecker::PasswordToKey(std::string& password)
@@ -39,7 +46,7 @@ void PasswordsChecker::CalculateHash(const std::vector<unsigned char>& data, std
 	hash.swap(hashTmp);
 }
 
-void PasswordsChecker::DencryptAes(const std::vector<unsigned char> chipherText, std::vector<unsigned char>& decryptText)
+void PasswordsChecker::DencryptAes(const std::vector<unsigned char>& chipherText, std::vector<unsigned char>& decryptText)
 {
 	EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 	if (!EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, m_key, m_iv))
@@ -76,7 +83,7 @@ void PasswordsChecker::PasswordGuessing(std::vector<std::string> generatedPass)
 	auto begin = generatedPass.begin();
 	auto end = generatedPass.end();
 	for (; begin != end; ++begin) {
-		++m_proceesBarIndex;
+		
 		PasswordToKey(*begin);
 
 		std::vector<unsigned char> dencryptTextRes;
