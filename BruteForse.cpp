@@ -1,5 +1,9 @@
 #include "BruteForse.h"
-std::mutex mtxBrf;
+
+BruteForce::BruteForce()
+{
+}
+
 BruteForce::BruteForce(const std::string pathFile)
 {
 	for (int i = 1; i < MAX_SIZE; m_guessCounter[i++] = -1);        // initializing counter with -1
@@ -13,7 +17,7 @@ BruteForce::BruteForce(const std::string pathFile)
 	auto begin = chipherText.begin();
 	auto end = chipherText.end();
 
-	for (;begin != end; ++begin, ++i) {
+	for (; begin != end; ++begin, ++i) {
 		if (i < size) {
 			m_cipherOnlyText.push_back(*begin);//get text without hash
 		}
@@ -37,7 +41,7 @@ void BruteForce::GenerateGuess(std::vector<std::string>& guessPassList, const si
 			m_guessCounter[++i] += 1;             // increment the next element (index i+1)
 		}
 
-		for (j = 0;j <= i;++j)   // change all chars that differ from the last guess (the number of chars changed is equal to the number of counter elements tested(=i))
+		for (j = 0; j <= i; ++j)   // change all chars that differ from the last guess (the number of chars changed is equal to the number of counter elements tested(=i))
 		{
 			if (j < MAX_SIZE) // check if an element guess[j] exists
 				m_guess[j] = m_chars[m_guessCounter[j]];
@@ -61,7 +65,7 @@ std::vector<unsigned char> BruteForce::GetHashKey()
 	return m_hashKey;
 }
 
-std::vector<unsigned char> BruteForce::Get—ipherOnlyText()
+std::vector<unsigned char> BruteForce::GetCipherOnlyText()
 {
 	return m_cipherOnlyText;
 }
