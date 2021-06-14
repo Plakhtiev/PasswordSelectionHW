@@ -4,7 +4,9 @@ PasswordsChecker::PasswordsChecker(std::shared_ptr<BruteForce> generator) :
 	m_generator(generator),
 	m_cipherOnlyText(generator->GetCipherOnlyText()),
 	m_hashKey(generator->GetHashKey()),
-	m_progressBar(progresscpp::ProgressBar(PASS_4_CHARS, 70, '#', '-'))
+	m_progressBar(progresscpp::ProgressBar(PASS_4_CHARS, 70, '#', '-')),
+	m_key {},
+	m_iv {}
 
 {
 	/* Initialize digests table */

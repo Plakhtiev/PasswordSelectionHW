@@ -1,10 +1,8 @@
 #include <string>
 #include <vector>
 #include <thread>
-#include <mutex>
 #include <iostream>
 #include <stdio.h>
-#include <memory>
 
 #include "openssl/evp.h"
 #include <openssl/aes.h>
@@ -20,8 +18,9 @@
 
 int main(int argc, char* argv[])
 {
-	
+	Timer timer;
 	const size_t quarter = pow(CHAR_COUNT, PASS_LENGTH) / 4;
+	std::cout << "Start programm please wait" << '\n';
 
 	try
 	{
