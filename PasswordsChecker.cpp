@@ -85,8 +85,11 @@ void PasswordsChecker::DencryptAes(const std::vector<unsigned char>& chipherText
 	EVP_CIPHER_CTX_free(ctx);
 }
 
-void PasswordsChecker::PasswordGuessing(std::vector<std::string> generatedPass)
+void PasswordsChecker::PasswordGuessing(size_t count)
 {
+	std::vector<std::string> generatedPass;
+	m_generator->GenerateGuess(generatedPass, count);//generate and write passwords guess
+
 	auto begin = generatedPass.begin();
 	auto end = generatedPass.end();
 	for (; begin != end; ++begin) {
@@ -94,11 +97,12 @@ void PasswordsChecker::PasswordGuessing(std::vector<std::string> generatedPass)
 		PasswordToKey(*begin);
 		
 		std::vector<unsigned char> dencryptTextRes;
-		DencryptAes(m_cipherOnlyText, dencryptTextRes);
-		std::vector<unsigned char> hash;
-		CalculateHash(dencryptTextRes, hash);
+		DencryptAes(m_cipherOnlyText, dencryptTextRes);// try decrypt with pass
 
-		if (hash == m_hashKey) {
+		std::vector<unsigned char> hash;
+		CalculateHash(dencryptTextRes, hash);//calculate hash decrypt text
+
+		if (hash == m_hashKey) {// compare the hash
 			m_passFound = *begin;
 			return;
 		}

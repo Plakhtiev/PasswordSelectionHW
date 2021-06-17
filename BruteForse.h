@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <mutex>
 
 #include "openssl/evp.h"
 #include <openssl/aes.h>

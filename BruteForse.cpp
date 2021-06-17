@@ -1,6 +1,6 @@
 #include "BruteForse.h"
 
-
+std::mutex mtx;
 
 BruteForce::BruteForce(const std::string pathFile) :
 	m_chars("abcdefghijklmnopqrstuvwxyz0123456789")
@@ -11,7 +11,7 @@ BruteForce::BruteForce(const std::string pathFile) :
 	std::vector<unsigned char> chipherText;
 	ReadFile(pathFile, chipherText);
 
-	const int size = chipherText.size() - 32; // size text without hash
+	const size_t size = chipherText.size() - 32; // size text without hash
 	size_t i = 0;
 	auto begin = chipherText.begin();
 	auto end = chipherText.end();
@@ -28,6 +28,7 @@ BruteForce::BruteForce(const std::string pathFile) :
 
 void BruteForce::GenerateGuess(std::vector<std::string>& guessPassList, const size_t countGeneratePass)
 {
+	std::lock_guard<std::mutex> grd(mtx);
 	int i, j;
 
 	while (m_countGuess++ < pow(CHAR_COUNT, PASS_LENGTH) && countGeneratePass >= m_countGuess)

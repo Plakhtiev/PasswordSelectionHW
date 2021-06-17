@@ -28,26 +28,17 @@ int main(int argc, char* argv[])
 
 		PasswordsChecker checker(pbrf);
 
-		std::vector <std::string> passList1;
-		std::vector <std::string> passList2;
-		std::vector <std::string> passList3;
-		std::vector <std::string> passList4;
-		pbrf->GenerateGuess(passList1, quarter);
-		pbrf->GenerateGuess(passList2, quarter);
-		pbrf->GenerateGuess(passList3, quarter);
-		pbrf->GenerateGuess(passList4, quarter);
-
 		std::thread t_guess1([&]() {
-			checker.PasswordGuessing(passList1);
+			checker.PasswordGuessing(quarter);
 			});
 		std::thread t_guess2([&]() {
-			checker.PasswordGuessing(passList2);
+			checker.PasswordGuessing(quarter);
 			});
 		std::thread t_guess3([&]() {
-			checker.PasswordGuessing(passList3);
+			checker.PasswordGuessing(quarter);
 			});
 		std::thread t_guess4([&]() {
-			checker.PasswordGuessing(passList4);
+			checker.PasswordGuessing(quarter);
 			});
 
 		progresscpp::ProgressBar progressBar = checker.GetProgressBar();

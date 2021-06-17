@@ -18,7 +18,7 @@ class PasswordsChecker
 public:
 
 	PasswordsChecker(std::shared_ptr<BruteForce> generator);
-	void PasswordGuessing(std::vector<std::string> generatedPass);
+	void PasswordGuessing(size_t count);
 	progresscpp::ProgressBar GetProgressBar();
 	std::string GetPassFound();
 private:
