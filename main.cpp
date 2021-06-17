@@ -9,7 +9,6 @@
 #include "openssl/sha.h"
 
 #include "Timer.h"
-#include "BruteForse.h"
 #include "PasswordsChecker.h"
 #include "FileStream.h"
 #include "ProgressBar.hpp"
@@ -24,9 +23,9 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		auto pbrf = std::make_shared<BruteForce>("chipher_text_brute_force");
+		
 
-		PasswordsChecker checker(pbrf);
+		PasswordsChecker checker("chipher_text_brute_force");
 
 		std::thread t_guess1([&]() {
 			checker.PasswordGuessing(quarter);
