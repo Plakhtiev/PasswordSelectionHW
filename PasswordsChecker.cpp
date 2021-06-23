@@ -1,36 +1,31 @@
 #include "PasswordsChecker.h"
 
-std::mutex mtx;
 
-PasswordsChecker::PasswordsChecker(const std::string pathFile) :
-	m_chars("abcdefghijklmnopqrstuvwxyz0123456789"),
-	m_progressBar(progresscpp::ProgressBar(PASS_4_CHARS, 70, '#', '-')),
+
+PasswordsChecker::PasswordsChecker(const std::string& pathFile, const size_t supposedPassLength) :
+	m_chars("abcdefghijklmnopqrstuvwxyz0123456789"),	
+	m_progressBar(progresscpp::ProgressBar(pow(m_charCount, m_supposedPassLength), 70, '#', '-')),
 	m_key{},
 	m_iv{}
 {
+	//m_supposedPassLength = supposedPassLength;
 	/* Initialize digests table */
 	OpenSSL_add_all_digests();
 	m_dgst = EVP_get_digestbyname("md5");
 
-	for (int i = 1; i < MAX_SIZE; m_guessCounter[i++] = -1);        // initializing counter with -1
-	for (int i = 0; i <= MAX_SIZE; m_guess[i++] = '\0');     // initializing guess with NULL
+	for (int i = 1; i < m_maxSize; m_guessCounter[i++] = -1);        // initializing counter with -1
+	for (int i = 0; i <= m_maxSize; m_guess[i++] = '\0');     // initializing guess with NULL
 
 	std::vector<unsigned char> chipherText;
 	ReadFile(pathFile, chipherText);
 
-	const size_t size = chipherText.size() - 32; // size text without hash
-	size_t i = 0;
-	auto begin = chipherText.begin();
+	const size_t sizeText = chipherText.size() - SHA256_DIGEST_LENGTH; // size text without hash
+
+	auto beginHash = chipherText.begin() + sizeText;
 	auto end = chipherText.end();
 
-	for (; begin != end; ++begin, ++i) {
-		if (i < size) {
-			m_cipherOnlyText.push_back(*begin);//get text without hash
-		}
-		if (i >= size) {
-			m_hashKey.push_back(*begin);//get hash from file
-		}
-	}
+	m_cipherOnlyText.assign(chipherText.begin(), chipherText.begin() + sizeText);
+	m_hashKey.assign(beginHash, end);
 }
 
 
@@ -46,33 +41,36 @@ std::string PasswordsChecker::GetPassFound()
 
 void PasswordsChecker::GenerateGuess(std::vector<std::string>& guessPassList, const size_t countGeneratePass)
 {
-	std::lock_guard<std::mutex> grd(mtx);
+	std::lock_guard<std::mutex> grd(m_mtx);
 	int i, j;
 
-	while (m_countGuess++ < pow(CHAR_COUNT, PASS_LENGTH) && countGeneratePass >= m_countGuess)
+	while (m_countGuess++ < pow(m_charCount, m_supposedPassLength) && countGeneratePass >= m_countGuess)
 	{
 		// increment guessc[i+1] if guessc[i] is bigger than the number of chars in the array
 		i = 0;
-		while (m_guessCounter[i] == CHAR_COUNT)    // check all counter elements wether theire value is bigger than the number of chars stored in CHAR_COUNT or not
+		while (m_guessCounter[i] == m_charCount)    // check all counter elements wether theire value is bigger than the number of chars stored in m_charCount or not
 		{
-			m_guessCounter[i] = 0;                // reset the element that is bigger than CHAR_COUNT to 0
+			m_guessCounter[i] = 0;                // reset the element that is bigger than m_charCount to 0
 			m_guessCounter[++i] += 1;             // increment the next element (index i+1)
 		}
 
 		for (j = 0; j <= i; ++j)   // change all chars that differ from the last guess (the number of chars changed is equal to the number of counter elements tested(=i))
 		{
-			if (j < MAX_SIZE) // check if an element guess[j] exists
+			if (j < m_maxSize) // check if an element guess[j] exists
 				m_guess[j] = m_chars[m_guessCounter[j]];
 		}
 
-		//printf("%s\n", m_guess);   // printf is used since it is way faster than std::cout
-		//		
 		guessPassList.emplace_back(m_guess);
 
 		++m_guessCounter[0];    // increment guessc at index 0 for the next run
 	}
 
 	m_countGuess = 0; //reset count Guess
+}
+
+size_t PasswordsChecker::GetCountGeneratePass()
+{
+	return m_countGeneratePass;
 }
 
 void PasswordsChecker::PasswordToKey(std::string& password)
@@ -106,6 +104,7 @@ void PasswordsChecker::CalculateHash(const std::vector<unsigned char>& data, std
 void PasswordsChecker::DencryptAes(const std::vector<unsigned char>& chipherText, std::vector<unsigned char>& decryptText)
 {
 	EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+	
 	if (!EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, m_key, m_iv))
 	{
 		throw std::runtime_error("DecryptInit error");
@@ -123,7 +122,7 @@ void PasswordsChecker::DencryptAes(const std::vector<unsigned char>& chipherText
 	int lastPartLen = 0;
 	if (!EVP_DecryptFinal_ex(ctx, &chipherTextBuf[0] + chipherTextSize, &lastPartLen)) {
 		EVP_CIPHER_CTX_free(ctx);
-		//throw std::runtime_error("DencryptFinal error");
+		
 		decryptText.push_back('0');
 		return;
 	}
@@ -142,11 +141,9 @@ void PasswordsChecker::PasswordGuessing(size_t count)
 	std::vector<std::string> generatedPass;
 	GenerateGuess(generatedPass, count);//generate and write passwords guess
 
-	auto begin = generatedPass.begin();
-	auto end = generatedPass.end();
-	for (; begin != end; ++begin) {
+	for (auto& pass : generatedPass) {
 		
-		PasswordToKey(*begin);
+		PasswordToKey(pass);
 		
 		std::vector<unsigned char> dencryptTextRes;
 		DencryptAes(m_cipherOnlyText, dencryptTextRes);// try decrypt with pass
@@ -155,7 +152,7 @@ void PasswordsChecker::PasswordGuessing(size_t count)
 		CalculateHash(dencryptTextRes, hash);//calculate hash decrypt text
 
 		if (hash == m_hashKey) {// compare the hash
-			m_passFound = *begin;
+			m_passFound = pass;
 			return;
 		}
 	}
