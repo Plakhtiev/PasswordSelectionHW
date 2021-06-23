@@ -9,7 +9,6 @@
 #include "openssl/sha.h"
 
 #include "Timer.h"
-#include "BruteForse.h"
 #include "PasswordsChecker.h"
 #include "FileStream.h"
 #include "ProgressBar.hpp"
@@ -19,31 +18,32 @@
 int main(int argc, char* argv[])
 {
 	Timer timer;
-	const size_t quarter = pow(CHAR_COUNT, PASS_LENGTH) / 4;
+	const size_t sizeSupposedPass = 4;
+	const size_t numberSupposedPass = pow(36, sizeSupposedPass);
 	std::cout << "Start programm please wait" << '\n';
 
 	try
 	{
-		auto pbrf = std::make_shared<BruteForce>("chipher_text_brute_force");
+		
 
-		PasswordsChecker checker(pbrf);
+		PasswordsChecker checker("chipher_text_brute_force");
 
 		std::thread t_guess1([&]() {
-			checker.PasswordGuessing(quarter);
+			checker.PasswordGuessing(numberSupposedPass / 4);
 			});
 		std::thread t_guess2([&]() {
-			checker.PasswordGuessing(quarter);
+			checker.PasswordGuessing(numberSupposedPass / 4);
 			});
 		std::thread t_guess3([&]() {
-			checker.PasswordGuessing(quarter);
+			checker.PasswordGuessing(numberSupposedPass / 4);
 			});
 		std::thread t_guess4([&]() {
-			checker.PasswordGuessing(quarter);
+			checker.PasswordGuessing(numberSupposedPass / 4);
 			});
 
 		progresscpp::ProgressBar progressBar = checker.GetProgressBar();
 		std::thread t_process([&]() {
-			for (int i = 0; i < PASS_4_CHARS; i++) {
+			for (int i = 0; i < numberSupposedPass; i++) {
 				++progressBar;
 				if (i % 10000 == 0)
 						progressBar.display();
